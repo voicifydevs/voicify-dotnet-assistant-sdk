@@ -1,16 +1,108 @@
 ﻿using System;
+using Voicify.Sdk.Assistant.Api;
+using Voicify.Sdk.Assistant.Client;
+using Voicify.Sdk.Core.Models.Model;
+using System.Linq;
+using System.Threading.Tasks;
+using Voicify.Sdk.Core.Models.Constants;
 
 namespace Voicify.Samples.Assistant.ConsoleApp
 {
     class Program
     {
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
-            Console.WriteLine("Welcome to the Voicify Assistant Sample App!");
-            Console.WriteLine("Enter your \"Custom Assistant\" fulfillment URL for the app you want to use. You can find it in your app settings in the Voicify CMS");
-            var url = Console.ReadLine();
+            Uri appUri = null;
+            string appId = null;
+            string appSecret = null;
+            while (appUri == null || appId == null || appSecret == null)
+            {
+                Console.WriteLine("Welcome to the Voicify Assistant Sample App!");
+                Console.WriteLine("Enter your \"Custom Assistant\" fulfillment URL for the app you want to use. You can find it in your app settings in the Voicify CMS");
+                var url = Console.ReadLine();
+                var validUrl = Uri.TryCreate(url, UriKind.Absolute, out appUri);
+                if (!validUrl)
+                {
+                    Console.WriteLine("Invalid URL. Try a different one");
+                }
+                else
+                {
+                    var queryParams = appUri.Query
+                      .Substring(1) // Remove '?'
+                      .Split('&')
+                      .Select(q => q.Split('='))
+                      .ToDictionary(q => q.FirstOrDefault(), q => q.Skip(1).FirstOrDefault());
+
+                    if (queryParams.ContainsKey("applicationId"))
+                        appId = queryParams["applicationId"];
+                    if (queryParams.ContainsKey("applicationSecret"))
+                        appSecret = queryParams["applicationSecret"];
+                }
+            }
+
+            var customAssistantApi = new CustomAssistantApi(new Configuration
+            {
+                BasePath = $"https://{appUri.Host}"
+            });
+
+            var device = new CustomAssistantDevice(
+                id: Guid.NewGuid().ToString(),
+                name: "Voicify Sample Console App",
+                supportsDisplayText: true,
+                supportsTextInput: true
+            );
+            var user = new CustomAssistantUser(
+                id: Guid.NewGuid().ToString(),
+                name: "Console User"
+            );
 
 
+            Console.WriteLine("Requesting app's welcome message...");
+            var welcomeContext = CreateContext(string.Empty);
+            welcomeContext.RequiresLanguageUnderstanding = false;
+            welcomeContext.RequestName = CustomAssistantIntents.VoicifyWelcome;
+            var welcomeResponse = await customAssistantApi.HandleRequestAsync(appId, appSecret, new CustomAssistantRequestBody(
+                requestId: Guid.NewGuid().ToString(),
+                device: device,
+                user: user,
+                context: welcomeContext
+            ));
+
+            Console.WriteLine(welcomeResponse.OutputSpeech);
+            Console.WriteLine("...");
+
+            CustomAssistantResponse response = null;
+            while(response?.EndSession != true)
+            {
+                var input = Console.ReadLine();
+                Console.WriteLine("...");
+                response = await customAssistantApi.HandleRequestAsync(appId, appSecret, new CustomAssistantRequestBody(
+                    requestId: Guid.NewGuid().ToString(),
+                    device: device,
+                    user: user,
+                    context: CreateContext(input)));
+
+                Console.WriteLine(response.OutputSpeech);
+                Console.WriteLine("...");
+            }
+
+            Console.WriteLine("That's all! To start a new session, restart this app");
+
+
+            Console.ReadLine();
+        }
+
+
+        static CustomAssistantRequestContext CreateContext(string input)
+        {
+            return new CustomAssistantRequestContext(
+                channel: "Voicify Console App",
+                locale: "en-US",
+                sessionId: Guid.NewGuid().ToString(),
+                requestType: "IntentRequest",
+                originalInput: input,
+                requiresLanguageUnderstanding: true
+            );
         }
     }
 }
