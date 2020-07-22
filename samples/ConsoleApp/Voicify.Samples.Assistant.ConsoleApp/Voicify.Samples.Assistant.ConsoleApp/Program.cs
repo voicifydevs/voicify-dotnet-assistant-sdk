@@ -56,7 +56,6 @@ namespace Voicify.Samples.Assistant.ConsoleApp
                 name: "Console User"
             );
 
-
             Console.WriteLine("Requesting app's welcome message...");
             var welcomeContext = CreateContext(string.Empty);
             welcomeContext.RequiresLanguageUnderstanding = false;
@@ -87,11 +86,8 @@ namespace Voicify.Samples.Assistant.ConsoleApp
             }
 
             Console.WriteLine("That's all! To start a new session, restart this app");
-
-
             Console.ReadLine();
         }
-
 
         static CustomAssistantRequestContext CreateContext(string input)
         {
