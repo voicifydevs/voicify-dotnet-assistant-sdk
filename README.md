@@ -33,7 +33,7 @@ So whether you are using a custom Alexa Skill that makes requests to your Voicif
 
 ## Making Requests
 
-To make requests, create an instance of the API you need, then call the appropriate method (Usually `HandlRequest`, although Bixby has many other endpoints to use.)
+To make requests, create an instance of the API you need, then call the appropriate method (Usually `HandleRequest`, although Bixby has many other endpoints to use.)
 
 For example, we can make a request to the Voicify Custom Assistant API with just the text from the user:
 
