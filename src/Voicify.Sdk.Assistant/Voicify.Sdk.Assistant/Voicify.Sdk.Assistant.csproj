@@ -10,6 +10,7 @@
     <PackageIconUrl>https://wb2.6cb.myftpupload.com/wp-content/uploads/2018/06/cropped-voicify-favicon-270x270.png</PackageIconUrl>
     <PackageProjectUrl>https://voicify.com</PackageProjectUrl>
     <Description>Api methods for interacting with the Voicify Assistant SDK. Generate content, webhook, media, and more as well as query for all sorts of content within your Voicify apps.</Description>
+    <RepositoryUrl>https://github.com/voicifydevs/voicify-dotnet-assistant-sdk</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>
